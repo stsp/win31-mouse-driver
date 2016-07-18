@@ -35,7 +35,7 @@ IN_SERVICE	equ	0bh		;8259 in service register select value
 
 ;	Symbolic equates for contents of the MOUSEINFO data structure
 
-NUMBER_BUTTONS	equ	2
+NUMBER_BUTTONS	equ	3
 X_SPEED 	equ	2
 Y_SPEED 	equ	2
 
