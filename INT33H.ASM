@@ -98,45 +98,15 @@ I33_PROC_START	equ	$-I33_START	;Delta to this procedure
 
 I33_proc	proc	far
 
+	push	ax
 	mov	ax,_DATA		 ;Need to gain access to our
 	mov	ds,ax			;  data segment
 	assumes ds,Data
-	push	cx
-	push	dx
-
-	and	bx,00000011b			;Isolate buttons, set BH = 0
-	mov	dh,bl				;Get and update mouse state
-	xchg	dh,bptr device_int[OLD_STATE]	;1 indicates button down
-	shl	dh,1				;Shift old state
-	shl	dh,1
-	or	bl,dh				;Combine states into index
-
-;	mov	bl,deltas_states[bx]	;Get button delta/states, BH = 0
-	mov	bl,bptr device_int[STATE_XLATE][bx]
-
-	mov	cx,di			;CX = delta Y
-	or	cx,si			;Show motion if any occured
-	neg	cx			;'C' clear only if motion (DI ne 0)
-	adc	bx,bx
-	jnz	I33_got_event
-	pop	cx
-	pop	bx
-
-	jmp	I33_nothing_happened
-
-I33_got_event:
-	.errnz	SF_MOVEMENT-00000001b
-
-	mov	ax,CLEAR_COUNTERS	;Clear dX and dY counters			   ;clear dX & dY counters
-	int	MOUSE_SYS_VEC		;BX,SI,DI are preserved
-
-	mov	cx,di			;CX = delta Y
-	xchg	ax,si			;AX = delta X
-	xchg	ax,bx			;AX = status, BX = delta X
+	pop	ax
+	mov	bx,cx
+	mov	cx,dx
 	mov	dx,NUMBER_BUTTONS
 	or	ax,8000h
-	pop	cx
-	pop	bx
 
 	call	event_proc
 
@@ -161,57 +131,6 @@ OLD_INT_33H_PROC equ	$-I33_START	;Delta to this byte
 ;	old_status contains the state of the mouse the last time we
 ;	were called to process an interrupt.
 
-OLD_STATE	equ	$-I33_START	;Delta to this byte
-		db	0		;Old status will go here
-
-page
-
-;-----------------------------------------------------------------------;
-; state_xlate
-;
-;	state_xlate is used to translate the current and previous
-;	button state information into the values required by
-;	Windows.  It is indexed as follows:
-;
-;	    pB2 pB1 cB2 cB1
-;
-;	     |	 |   |	 |
-;	     |	 |   |	  --- 1 if button 1 is	down, 0 if button 1 is	up
-;	     |	 |   |
-;	     |	 |    ------- 1 if button 2 is	down, 0 if button 2 is	up
-;	     |	 |
-;	     |	  ----------- 1 if button 1 was down, 0 if button 1 was up
-;	     |
-;	      --------------- 1 if button 2 was down, 0 if button 2 was up
-;
-;	This table must be copied to the data segment along with the
-;	interrupt handler.
-;
-;-----------------------------------------------------------------------;
-
-STATE_XLATE	equ	$-I33_START	;delta to this table
-
-	db	0			shr 1
-	db	(SF_B1_DOWN)		shr 1
-	db	(SF_B2_DOWN)		shr 1
-	db	(SF_B1_DOWN+SF_B2_DOWN) shr 1
-
-	db	(SF_B1_UP)		shr 1
-	db	0			shr 1
-	db	(SF_B1_UP+SF_B2_DOWN)	shr 1
-	db	(SF_B2_DOWN)		shr 1
-
-	db	(SF_B2_UP)		shr 1
-	db	(SF_B1_DOWN+SF_B2_UP)	shr 1
-	db	0			shr 1
-	db	(SF_B1_DOWN)		shr 1
-
-	db	(SF_B1_UP+SF_B2_UP)	shr 1
-	db	(SF_B2_UP)		shr 1
-	db	(SF_B1_UP)		shr 1
-	db	0			shr 1
-
-	.errnz	NUMBER_BUTTONS-2	;Won't work unless a two button mouse
 page
 
 I33_INT_LENGTH	= $-I33_START		;Length of code to copy
@@ -252,10 +171,6 @@ page
 
 I33_enable	proc	near
 
-	mov	bptr device_int[OLD_STATE],0
-
-;	push	ds			;ES:DX --> interrupt procedure
-;	pop	es
 	mov	es,IntCS
 	assumes es,Data
 
