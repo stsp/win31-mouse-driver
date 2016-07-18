@@ -39,10 +39,12 @@
 
 	externFP AllocDStoCSAlias
 
+if 0
 	externNP inport_search
 	externNP serial_search
 	externNP bus_search
 	externNP ps2_search
+endif
 	externNP I33_init
 
 	externA  __WINFLAGS
@@ -746,7 +748,10 @@ try_mouse_reset:
 	.errnz	INT33H_RESET
 	int	MOUSE_SYS_VEC
 	or	ax,ax			;Zero if no mouse installed
-	jz	check_inport
+	jnz	sys_mouse_present
+	mov	mouse_type, MT_NO_MOUSE ;Reset mouse type to none
+	mov	si,DataOFFSET device_int;Resize to this limit
+	jmp	short resize_ds
 
 sys_mouse_present:
 	or	mouse_flags,MF_INT33H	;Show mouse driver is present
@@ -760,6 +765,7 @@ check_I33:
 	jmp	short got_mouse		;  if it exists
 
 
+if 0
 check_inport:
 	call	inport_search		;Try to find InPort mouse
 	jnc	check_bus		;InPort mouse wasn't found
@@ -785,6 +791,7 @@ check_serial:
 	mov	si,DataOFFSET device_int;Resize to this limit
 	jmp	short resize_ds
 
+endif
 got_mouse:
 ;
 ;	If running under Windows/386 then tell the Win386 mouse driver what
