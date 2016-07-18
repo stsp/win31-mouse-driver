@@ -121,8 +121,6 @@ device_int	proc	near
 
 device_int	endp
 
-globalB		winos2_mode,0
-
 sEnd	Data
 page
 
