@@ -102,9 +102,23 @@ I33_proc	proc	far
 	mov	ax,_DATA		 ;Need to gain access to our
 	mov	ds,ax			;  data segment
 	assumes ds,Data
+	push	dx
+	push	cx
+	mov	ax,26h
+	int	MOUSE_SYS_VEC
+	mov	di,dx
+	mov	ax,0ffffh
+	pop	bx			; X coord
+	mul	bx
+	div	cx
+	mov	si,ax
+	mov	ax,0ffffh
+	pop	bx			; Y coord
+	mul	bx
+	div	di
+	mov	cx,ax
+	mov	bx,si
 	pop	ax
-	mov	bx,cx
-	mov	cx,dx
 	mov	dx,NUMBER_BUTTONS
 	or	ax,8000h
 
@@ -273,49 +287,8 @@ I33_init	proc	near
 	mov	disable_proc,CodeOFFSET I33_disable
 	mov	si,CodeOFFSET I33_START
 	mov	cx,I33_INT_LENGTH
-	call	I33_init_winos2
 	ret
 I33_init	endp
-
-;---------------------------Public-Routine------------------------------;
-; I33_init_winos2 - Initialize the WinOS/2 mode
-;
-;
-; Entry:
-;	None
-; Returns:
-;	None
-; Error Returns:
-;	None
-; History:
-;	unknown, copied from the IBM WinOS/2 driver
-;	Initial version
-;-----------------------------------------------------------------------;
-
-;------------------------------Pseudo-Code------------------------------;
-; {
-; }
-;-----------------------------------------------------------------------;
-
-	assumes cs,Code
-	assumes ds,Data
-
-I33_init_winos2	proc	near
-
-	pushf
-	push	ax
-	push	si
-	push	bx
-	mov	ah,80h
-	clc
-	int     66h
-	pop	bx
-	pop	si
-	pop	ax
-	popf
-	ret
-
-I33_init_winos2	endp
 
 sEnd	Code
 end
