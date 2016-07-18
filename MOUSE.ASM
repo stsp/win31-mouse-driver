@@ -47,7 +47,7 @@
 
 	externA  __WINFLAGS
 
-OS2	equ	10			;Version number for OS/2
+;OS2	equ	10			;Version number for OS/2
 
 sBegin	Data
 
@@ -120,6 +120,8 @@ device_int	proc	near
 	db	MAX_INT_SIZE dup (?)	;Specific int handler goes here
 
 device_int	endp
+
+globalB		winos2_mode,0
 
 sEnd	Data
 page
@@ -752,8 +754,8 @@ sys_mouse_present:
 	or	mouse_flags,MF_INT33H	;Show mouse driver is present
 	mov	ah,30h			;Get DOS version number
         int     21h
-	cmp	al,OS2			;OS/2?
-	jb	check_inport		;If not, skip int 33h search
+;	cmp	al,OS2			;OS/2?
+;	jb	check_inport		;If not, skip int 33h search
 
 check_I33:
 	call	I33_init		;Use the installed mouse driver

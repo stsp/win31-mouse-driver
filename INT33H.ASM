@@ -39,6 +39,8 @@ externB device_int			;Start of mouse interrupt handler
 externB mouse_flags			;Various flags
 externW enable_proc			;Address of routine to	enable mouse
 externW disable_proc			;Address of routine to disable mouse
+externW IntCS
+externB winos2_mode
 
 sEnd	Data
 page
@@ -100,7 +102,12 @@ I33_proc	proc	far
 	mov	ax,_DATA		 ;Need to gain access to our
 	mov	ds,ax			;  data segment
 	assumes ds,Data
+	cmp	bptr winos2_mode,1
+	jne     I33_no_winos2_1
+	push	cx
+	push	dx
 
+I33_no_winos2_1:
 	and	bx,00000011b			;Isolate buttons, set BH = 0
 	mov	dh,bl				;Get and update mouse state
 	xchg	dh,bptr device_int[OLD_STATE]	;1 indicates button down
@@ -115,7 +122,16 @@ I33_proc	proc	far
 	or	cx,si			;Show motion if any occured
 	neg	cx			;'C' clear only if motion (DI ne 0)
 	adc	bx,bx
-	jz	I33_nothing_happened
+	jnz	I33_got_event
+	cmp	bptr winos2_mode,1
+	jne	I33_no_winos2_2
+	pop	cx
+	pop	bx
+
+I33_no_winos2_2:
+	jmp	I33_nothing_happened
+
+I33_got_event:
 	.errnz	SF_MOVEMENT-00000001b
 
 	mov	ax,CLEAR_COUNTERS	;Clear dX and dY counters			   ;clear dX & dY counters
@@ -125,8 +141,13 @@ I33_proc	proc	far
 	xchg	ax,si			;AX = delta X
 	xchg	ax,bx			;AX = status, BX = delta X
 	mov	dx,NUMBER_BUTTONS
-        xor     si,si			;Zero out MessageExtraInfo for 3.1
-        xor     di,di
+	cmp	bptr winos2_mode,1
+	jne	I33_no_winos2_3
+	or	ax,8000h
+	pop	cx
+	pop	bx
+
+I33_no_winos2_3:
 	call	event_proc
 
 I33_nothing_happened:
@@ -152,6 +173,10 @@ OLD_INT_33H_PROC equ	$-I33_START	;Delta to this byte
 
 OLD_STATE	equ	$-I33_START	;Delta to this byte
 		db	0		;Old status will go here
+
+dummy		equ	$-I33_START
+		db	0
+
 page
 
 ;-----------------------------------------------------------------------;
@@ -242,8 +267,9 @@ I33_enable	proc	near
 
 	mov	bptr device_int[OLD_STATE],0
 
-	push	ds			;ES:DX --> interrupt procedure
-	pop	es
+;	push	ds			;ES:DX --> interrupt procedure
+;	pop	es
+	mov	es,IntCS
 	assumes es,Data
 
 	lea	dx,device_int[I33_PROC_START]
@@ -345,8 +371,56 @@ I33_init	proc	near
 	mov	disable_proc,CodeOFFSET I33_disable
 	mov	si,CodeOFFSET I33_START
 	mov	cx,I33_INT_LENGTH
+	call	I33_init_winos2
 	ret
 I33_init	endp
+
+;---------------------------Public-Routine------------------------------;
+; I33_init_winos2 - Initialize the WinOS/2 mode
+;
+;
+; Entry:
+;	None
+; Returns:
+;	None
+; Error Returns:
+;	None
+; History:
+;	unknown, copied from the IBM WinOS/2 driver
+;	Initial version
+;-----------------------------------------------------------------------;
+
+;------------------------------Pseudo-Code------------------------------;
+; {
+; }
+;-----------------------------------------------------------------------;
+
+	assumes cs,Code
+	assumes ds,Data
+
+I33_init_winos2	proc	near
+
+	pushf
+	push	ax
+	push	si
+	push	bx
+	mov	ah,80h
+	lea	si,device_int[dummy]
+	clc
+	int     66h
+	jb	I33_no_winos2_4
+	cmp	ax,0
+	jne	I33_no_winos2_4
+	mov	bptr winos2_mode,1
+
+I33_no_winos2_4:
+	pop	bx
+	pop	si
+	pop	ax
+	popf
+	ret
+
+I33_init_winos2	endp
 
 sEnd	Code
 end
