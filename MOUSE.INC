@@ -116,7 +116,7 @@ endm
 ;	INT 33h (Mouse) Function Numbers
 
 MOUSE_SYS_VEC	equ	33h		;Software int to call MOUSE.SYS driver
-CALL_ON_ANY_INT equ	1Fh		;  Call us on any interrupt
+CALL_ON_ANY_INT equ	7Fh		;  Call us on any interrupt
 CLEAR_COUNTERS	equ	11		;  Clear dX and dY counters
 BASH_INT_PROC	equ	12		;  Overwrite the interrupt routine
 SWAP_INT_PROC	equ	20		;  Swap interrupt routine
