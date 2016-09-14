@@ -1,0 +1,11 @@
+[disks]
+;Names of the disks Setup can prompt for
+;label=., Description of disk, Volume Name
+;
+A=. ,"dosemu2 Driver Disk", MSDOS5.0
+
+[pointing.device]
+;
+;profile=  mouse driver, Mouse Description,  VMD
+;
+i33mouse= A:i33mouse.drv, "Universal (int33h) Mouse Driver", x:*vmd
