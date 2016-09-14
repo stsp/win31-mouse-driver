@@ -1,4 +1,5 @@
-set PATH=..\TOOLS;C:\RC;%PATH%
+set PATH=..\TOOLS;%PATH%
 set INCLUDE=..\INC
 set LIB=..\LIB
+cd src
 nmake
