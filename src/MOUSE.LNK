@@ -1,6 +1,6 @@
 mouse +
 int33h
-mouse.drv
+i33mouse.drv
 mouse/map/al:16
 libw /NOD
 mouse.def
