@@ -39,4 +39,3 @@ int33h.obj:	int33h.asm mouse.inc
 i33mouse.drv:	mouse.def mouse.obj int33h.obj
       link @mouse.lnk
       rc i33mouse.drv
-      mapsym mouse
