@@ -732,7 +732,7 @@ swap_them_back:
 	jne	try_mouse_reset 	;Not 6.00+
 	jcxz	sys_mouse_present	;6.00 or greater
 
-else	;-----------------------------------------------------------------
+;else	;-----------------------------------------------------------------
 
 	xor	bx,bx			;Current DOS mouse drivers implement
 	mov	ax,INT33H_GETINFO	;  a Get Mouse Info call
