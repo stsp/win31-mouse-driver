@@ -120,7 +120,7 @@ I33_proc	proc	far
 	mov	bx,si
 	pop	ax
 	mov	dx,NUMBER_BUTTONS
-	or	ax,8000h
+	or	ax,SF_ABSOLUTE
 
 	call	event_proc
 
