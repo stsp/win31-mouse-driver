@@ -190,12 +190,21 @@ I33_enable	proc	near
 
 	lea	dx,device_int[I33_PROC_START]
 	mov	cx,CALL_ON_ANY_INT	;Call us on any event
+if 0
 	mov	ax,SWAP_INT_PROC	;Swap interrupt routine
 	int	MOUSE_SYS_VEC
 
 	mov	wptr device_int[OLD_INT_33H_MASK],cx
 	mov	wptr device_int[OLD_INT_33H_PROC][0],dx
 	mov	wptr device_int[OLD_INT_33H_PROC][2],es
+else
+	mov	ax,BASH_INT_PROC	;Set interrupt routine
+	int	MOUSE_SYS_VEC
+
+	mov	wptr device_int[OLD_INT_33H_MASK],0
+	mov	wptr device_int[OLD_INT_33H_PROC][0],0
+	mov	wptr device_int[OLD_INT_33H_PROC][2],0
+endif
 	ret
 
 I33_enable	endp
